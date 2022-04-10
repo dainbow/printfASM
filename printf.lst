@@ -1,0 +1,331 @@
+     1                                  ; nasm -f elf64 -l 1-nasm.lst 1-nasm.s  ;  ld -s -o 1-nasm 1-nasm.o
+     2                                  
+     3                                  section .text
+     4                                  
+     5                                  global _start                 
+     6                                  
+     7                                  _start:     
+     8 00000000 48BF-                           mov rdi, Msg
+     8 00000002 [0000000000000000] 
+     9                                  
+    10 0000000A 68FF000000              		push qword 255
+    11 0000000F 6A21                    		push qword 33
+    12 00000011 6A64                    		push qword 100
+    13 00000013 68DA0E0000              		push qword 3802
+    14 00000018 68[3E000000]            		push string
+    15                                  
+    16 0000001D 6A61                    		push qword 'a'
+    17 0000001F 6A70                    		push qword 'p'
+    18 00000021 6A6F                    		push qword 'o'
+    19 00000023 6A7A                    		push qword 'z'
+    20                                  
+    21 00000025 68E4000000              		push qword 228
+    22 0000002A 68E4000000              		push qword 228
+    23 0000002F 68E4000000              		push qword 228
+    24 00000034 68E4000000              		push qword 228
+    25 00000039 68[32000000]            		push cry
+    26                                  
+    27 0000003E 55                      		push rbp
+    28 0000003F 4889E5                          mov rbp, rsp
+    29 00000042 4883C508                		add rbp, 0x8
+    30                                  
+    31 00000046 E814000000                      call printf
+    32 0000004B 4889E9                  		mov rcx, rbp
+    33 0000004E 5D                              pop rbp
+    34                                          
+    35 0000004F 4829E1                          sub rcx, rsp
+    36 00000052 4801CC                          add rsp, rcx
+    37                                  
+    38 00000055 B83C000000                      mov rax, 0x3C   
+    39 0000005A 4831FF                          xor rdi, rdi
+    40 0000005D 0F05                            syscall
+    41                                  
+    42                                  printf:
+    43 0000005F 803F00                          cmp byte [rdi], 0
+    44 00000062 0F84C3000000                    je  printfEnd
+    45                                  
+    46 00000068 803F25                          cmp byte [rdi], '%'
+    47 0000006B 0F859C000000                    jne simSym
+    48 00000071 48FFC7                          inc rdi
+    49                                  
+    50 00000074 803F25                  		cmp byte [rdi], '%'
+    51 00000077 0F8490000000                    je simSym
+    52                                  
+    53 0000007D 4831DB                  		xor rbx, rbx
+    54 00000080 8A1F                    		mov bl, [rdi]
+    55 00000082 80EB61                  		sub bl, 'a'
+    56                                                   
+    57 00000085 48C1E303                		shl rbx, 3
+    58                                                   
+    59 00000089 4881C3[2C010000]        		add rbx,jumpTable
+    60                                  
+    61 00000090 FF23                    		jmp [rbx]
+    62                                  dSym:
+    63 00000092 BA0A000000              		mov rdx, 10d
+    64                                  
+    65 00000097 E860010000              		call pSomeN
+    66 0000009C EBC1                    		jmp printf
+    67                                  xSym:
+    68 0000009E BA10000000              		mov rdx, 0x10
+    69                                  
+    70 000000A3 E854010000              		call pSomeN
+    71 000000A8 EBB5                    		jmp printf
+    72                                  cSym:
+    73 000000AA 57                      		push rdi
+    74                                  
+    75 000000AB B801000000              		mov rax, 0x01
+    76 000000B0 BF01000000                      mov rdi, 1
+    77                                  
+    78 000000B5 4889EE                  		mov rsi, rbp
+    79 000000B8 BA01000000                      mov rdx, 1
+    80 000000BD 0F05                            syscall
+    81                                  		
+    82 000000BF 5F                      		pop rdi
+    83                                  
+    84 000000C0 48FFC7                  		inc rdi
+    85 000000C3 4883C508                		add rbp, 8
+    86                                  
+    87 000000C7 EB96                    		jmp printf
+    88                                  oSym:
+    89 000000C9 BA08000000              		mov rdx, 0x8
+    90                                  
+    91 000000CE E829010000              		call pSomeN
+    92 000000D3 EB8A                    		jmp printf
+    93                                  sSym:
+    94 000000D5 57                      		push rdi
+    95                                  
+    96 000000D6 488B7D00                		mov rdi, [rbp]
+    97 000000DA 4883C508                		add rbp, 8
+    98                                  
+    99 000000DE E818020000              		call strlen
+   100 000000E3 4889C2                          mov rdx, rax
+   101 000000E6 B801000000              		mov rax, 0x01
+   102 000000EB 4889FE                  		mov rsi, rdi
+   103 000000EE BF01000000                      mov rdi, 1
+   104                                          
+   105 000000F3 0F05                            syscall
+   106                                  
+   107 000000F5 5F                      		pop rdi
+   108 000000F6 48FFC7                  		inc rdi
+   109 000000F9 E961FFFFFF              		jmp printf
+   110                                  bSym:
+   111 000000FE BA02000000              		mov rdx, 0x2
+   112                                  
+   113 00000103 E8F4000000              		call pSomeN
+   114 00000108 E952FFFFFF              		jmp printf
+   115                                  simSym:
+   116 0000010D 57                              push rdi
+   117                                  
+   118 0000010E B801000000                      mov rax, 0x01
+   119 00000113 4889FE                          mov rsi, rdi
+   120 00000116 BF01000000                      mov rdi, 1
+   121 0000011B BA01000000                      mov rdx, 1
+   122 00000120 0F05                            syscall
+   123                                  
+   124 00000122 5F                              pop rdi
+   125 00000123 48FFC7                          inc rdi
+   126 00000126 E934FFFFFF                      jmp printf
+   127                                  
+   128                                  printfEnd:
+   129 0000012B C3                              ret                  
+   130                                  ;-------------------------------------------------------	
+   131                                  jumpTable:
+   132 0000012C [0D01000000000000]      		dq simSym
+   133 00000134 [FE00000000000000]      		dq bSym
+   134 0000013C [AA00000000000000]      		dq cSym
+   135 00000144 [9200000000000000]      		dq dSym
+   136 0000014C [0D01000000000000]-     		times 10 dq simSym
+   136 0000014C <rep Ah>           
+   137 0000019C [C900000000000000]      		dq oSym
+   138 000001A4 [0D01000000000000]-     		times 3 dq simSym
+   138 000001A4 <rep 3h>           
+   139 000001BC [D500000000000000]      		dq sSym
+   140 000001C4 [0D01000000000000]-     		times 4 dq simSym
+   140 000001C4 <rep 4h>           
+   141 000001E4 [9E00000000000000]      		dq xSym
+   142 000001EC [0D01000000000000]-     		times 2 dq simSym
+   142 000001EC <rep 2h>           
+   143                                  ;-------------------------------------------------------	
+   144                                  pSomeN:
+   145 000001FC 57                      		push rdi
+   146                                          
+   147 000001FD 488B7D00                        mov rdi, [rbp]
+   148 00000201 4883C508                        add rbp, 8
+   149                                  
+   150 00000205 48BE-                           mov rsi, tempStr
+   150 00000207 [4300000000000000] 
+   151                                  
+   152 0000020F E825000000                      call itoa
+   153                                  
+   154 00000214 B801000000                      mov rax, 0x01
+   155                                  
+   156 00000219 4881EE[43000000]                sub rsi, tempStr
+   157 00000220 4889F2                          mov rdx, rsi
+   158                                  
+   159 00000223 48BE-                           mov rsi, tempStr
+   159 00000225 [4300000000000000] 
+   160 0000022D BF01000000                      mov rdi, 1
+   161                                          
+   162 00000232 0F05                            syscall
+   163                                  
+   164 00000234 5F                              pop rdi
+   165 00000235 48FFC7                          inc rdi
+   166 00000238 C3                      		ret
+   167                                  ;---------------------------------------------------------------------
+   168                                  itoa:	
+   169 00000239 4883FA02                		cmp rdx, 2
+   170 0000023D 7528                    		jne nextcheck
+   171                                  		
+   172 0000023F 4889F9                  		mov rcx, rdi
+   173 00000242 4883E101                		and rcx, 0x1
+   174                                  
+   175 00000246 48D1EF                  		shr rdi, 1		
+   176                                  
+   177 00000249 4883FF00                		cmp rdi, 0
+   178 0000024D 7409                    		je itoaIF2
+   179                                  
+   180 0000024F 57                      		push rdi
+   181 00000250 51                      		push rcx
+   182                                  
+   183 00000251 E8E3FFFFFF              		call itoa
+   184                                  
+   185 00000256 59                      		pop rcx
+   186 00000257 5F                      		pop rdi
+   187                                  itoaIF2:
+   188 00000258 4889C8                  		mov rax, rcx
+   189 0000025B 4883C030                		add rax, '0'
+   190                                  
+   191 0000025F 4889F7                          mov rdi, rsi
+   192 00000262 AA                      		stosb
+   193 00000263 48FFC6                          inc rsi
+   194                                  
+   195 00000266 C3                      		ret
+   196                                  nextcheck: 	
+   197 00000267 4883FA08                		cmp rdx, 8
+   198 0000026B 7529                    		jne nextcheck1
+   199                                  
+   200 0000026D 4889F9                  		mov rcx, rdi
+   201 00000270 4883E107                		and rcx, 0x7
+   202                                  
+   203 00000274 48C1EF03                		shr rdi, 3	
+   204                                  
+   205 00000278 4883FF00                		cmp rdi, 0
+   206 0000027C 7409                    		je itoaIF8
+   207                                  
+   208 0000027E 57                      		push rdi
+   209 0000027F 51                      		push rcx
+   210                                  
+   211 00000280 E8B4FFFFFF              		call itoa
+   212                                  
+   213 00000285 59                      		pop rcx
+   214 00000286 5F                      		pop rdi
+   215                                  itoaIF8:
+   216 00000287 4889C8                  		mov rax, rcx
+   217 0000028A 4883C030                		add rax, '0'
+   218                                  
+   219 0000028E 4889F7                          mov rdi, rsi
+   220                                                   
+   221 00000291 AA                      		stosb
+   222 00000292 48FFC6                          inc rsi
+   223                                  
+   224 00000295 C3                      		ret
+   225                                  nextcheck1:
+   226 00000296 4883FA10                		cmp rdx, 16
+   227 0000029A 7533                    		jne finita
+   228                                  
+   229 0000029C 4889F9                  		mov rcx, rdi
+   230 0000029F 4883E10F                		and rcx, 0xf
+   231                                  
+   232 000002A3 48C1EF04                		shr rdi, 4	
+   233                                  
+   234 000002A7 4883FF00                		cmp rdi, 0
+   235 000002AB 7409                    		je itoaIF16
+   236                                  
+   237 000002AD 57                      		push rdi
+   238 000002AE 51                      		push rcx
+   239                                  
+   240 000002AF E885FFFFFF              		call itoa
+   241                                  
+   242 000002B4 59                      		pop rcx
+   243 000002B5 5F                      		pop rdi
+   244                                  itoaIF16:
+   245 000002B6 4889C8                  		mov rax, rcx
+   246                                  
+   247 000002B9 4883F809                		cmp rax, 9
+   248 000002BD 7604                    		jbe greater
+   249                                  
+   250 000002BF 4883C027                		add rax, 'a' - '0' - 0xa
+   251                                  
+   252                                  greater:
+   253 000002C3 4883C030                		add rax, '0'
+   254                                  		
+   255 000002C7 4889F7                          mov rdi, rsi
+   256                                                   
+   257 000002CA AA                      		stosb
+   258 000002CB 48FFC6                          inc rsi
+   259 000002CE C3                      		ret
+   260                                  finita:	
+   261 000002CF 4889F8                          mov rax, rdi
+   262 000002D2 F6F2                            div dl
+   263                                              
+   264 000002D4 4889C7                          mov rdi, rax
+   265 000002D7 3C00                    		cmp al, 0
+   266 000002D9 740C                    		je itoaIF
+   267                                  
+   268 000002DB 57                              push rdi
+   269                                                  
+   270 000002DC 30E4                    	    xor ah, ah
+   271 000002DE 4889C7                          mov rdi, rax
+   272                                                  
+   273 000002E1 E853FFFFFF                      call itoa
+   274 000002E6 5F                      		pop rdi
+   275                                  itoaIF:		
+   276 000002E7 4889F8                  		mov rax, rdi
+   277 000002EA 80FC09                  		cmp ah, 9
+   278                                  
+   279 000002ED 7603                    		jbe alphav
+   280                                  		
+   281 000002EF 80C427                  		add ah, 'a' - '0' - 0xa
+   282                                  alphav:
+   283 000002F2 80C430                  		add ah, '0'
+   284                                  
+   285 000002F5 8826                    		mov byte [rsi], ah
+   286 000002F7 48FFC6                  		inc rsi
+   287                                  	
+   288 000002FA C3                      		ret
+   289                                  ;-------------------------------------------------------
+   290                                  strlen:		
+   291 000002FB 57                      		push rdi
+   292 000002FC 51                      		push rcx		
+   293                                  		
+   294 000002FD B900100000              		mov rcx, 0x1000
+   295                                  	
+   296 00000302 4889FB                  		mov rbx, rdi		
+   297 00000305 B000                    		mov al, 0
+   298                                  
+   299 00000307 F2AE                    		repne scasb
+   300                                  		
+   301 00000309 4829DF                  		sub rdi, rbx
+   302 0000030C 4889F8                  		mov rax, rdi	
+   303                                  
+   304 0000030F 59                      		pop rcx
+   305 00000310 5F                      		pop rdi
+   306 00000311 C3                      		ret
+   307                                  ;-------------------------------------------------------	
+   308                                  		
+   309                                  section     .data
+   310                                              
+   311 00000000 257320256420256F20-     Msg:        db "%s %d %o %x %b %% %c%c%c%c, and I %s %x %d%%%c%b", 0x0a, 0
+   311 00000009 257820256220252520-
+   311 00000012 25632563256325632C-
+   311 0000001B 20616E642049202573-
+   311 00000024 202578202564252525-
+   311 0000002D 6325620A00         
+   312 00000032 5052494E5446204845-     cry:		db "PRINTF HERE", 0
+   312 0000003B 524500             
+   313 0000003E 4C4F564500              string:		db "LOVE", 0
+   314                                  
+   315 00000043 303030303030303030-     tempStr:    db "0000000000"
+   315 0000004C 30                 
+   316                                  MsgLen      equ $ - Msg
+   317                                  
